@@ -1,0 +1,469 @@
+<!-- TMPL_INCLUDE NAME="doc-head-open.inc" -->
+<title>impresion de recibos por cobrador</title> 
+<!-- TMPL_INCLUDE NAME="doc-head-close.inc" -->
+<!-- TMPL_INCLUDE NAME="calendar.inc" -->
+<script language="JavaScript">
+//$(document).ready()
+	$(function() {
+		$( "#tabs" ).tabs();
+	});
+
+function set_borrower_amount(borrowernumber){
+
+	$(".borrowernumber_" +borrowernumber).val('0');
+	set_amountoutstanding(borrowernumber);
+}
+function set_amount(object_id,amount, borrowernumber){
+  $('#' + object_id ).val(amount);
+   set_amountoutstanding(borrowernumber);
+  return false;
+}
+function set_amountoutstanding(borrowernumber){
+	var sum=0;
+ 	$(".borrowernumber_" +borrowernumber).each(function() {
+        sum += Number($(this).val());
+    });
+    
+    $("#total_amountoutstanding_" + borrowernumber).html(sum);
+	
+}
+function eliminar_cuota(borrowernumber, accountno){
+	var r=confirm("¿Seguro que desea eliminar esta cuota?");
+	if (r==true) {
+		document.location.href="fees.pl?action=delete_fee&borrowernumber="+ borrowernumber +"&accountno=" + accountno ;
+	}
+}
+</script>
+<style >
+#panel_control  {
+	list-style:none;
+	margin:0;
+	padding:0; 
+		clear:both;
+
+
+}
+
+#panel_control li{
+  list-style: none outside none;
+ width:68px;
+ padding:5px;
+ margin:10px;
+ float:left; 	
+}
+
+</style>
+</head>
+<body>
+<!-- TMPL_INCLUDE NAME="header.inc" -->
+<!-- TMPL_INCLUDE NAME="fees-search.inc" -->
+<div id="doc3" class="yui-t1">
+<div id="bd">
+<div id="yui-main">
+    <div class="yui-b">
+    <!-- TMPL_IF NAME="config" -->
+    <h2>Debe activar o actualizar el modulo de recibos (versión <!-- TMPL_VAR NAME="version" -->)</h2>
+    <p>Este mensaje aparece porque usted nunca utilizo el modulo o porque fue actualizada la versión del mismo.</p>
+    <form>
+		<p><label for="header">Titulo del recibo: </label>
+		<INPUT type="text" name="header" value="<!-- TMPL_VAR NAME="header" -->"> <br/>
+		<font size="-2"><em>Generalmente el nombre de la bibioteca</em></font></p>
+		<p><label for="footer">Pie del recibo: </label>
+		<INPUT type="text" name="footer" value="<!-- TMPL_VAR NAME="footer" -->"> <br/>
+		<em>Generalmente la dirección de la bibioteca</em></p>
+		<p><label for="numero">Primer Numero de recibo: </label>
+		<INPUT type="text" name="numero" value="<!-- TMPL_VAR NAME="numero" -->"> <br/>
+		<font size="-2"><em>Numero del primer recibo</em></font></p>
+		
+		<p><label for="ModuloRecibosValorReinscripcion">Valor reinscripcion: </label>
+		<INPUT type="text" name="ModuloRecibosValorReinscripcion" value="<!-- TMPL_VAR NAME="ModuloRecibosValorReinscripcion" -->"> <br/>
+		<font size="-2"><em>--</em></font></p>
+
+        <p><input type="submit" name="action" value="Guardar Preferencias"/>
+<em>* Guardar las preferencias implica activar el modulo</em>
+	</form>
+<!-- /TMPL_IF -->
+<!-- TMPL_IF NAME="start" -->
+<div id="config">
+<ul id="panel_control">
+	<li><a href="/cgi-bin/koha/fees/fees.pl">
+	<img src="/intranet-tmpl/prog/img/fees/socio.png"/><div>Socios</div></a>
+	</li>
+	<li><a href="/cgi-bin/koha/fees/fees.pl?action=collectors">
+	<img src="/intranet-tmpl/prog/img/fees/cobrador.png"/><div>Cobradores</div></a>
+	</li>
+	<li><a href="/cgi-bin/koha/fees/fees.pl?action=form+generar+cuotas">
+	<img src="/intranet-tmpl/prog/img/fees/cuotas.png"/><div>Generar cuotas</div></a>
+	</li>
+	<li><a href="/cgi-bin/koha/fees/fees.pl?action=otros">
+	<img src="/intranet-tmpl/prog/img/fees/otros.png"/><div>otros</div></a>
+	</li>
+	<li><a href="/cgi-bin/koha/fees/fees.pl?action=configurar+modulo">
+	<img src="/intranet-tmpl/prog/img/fees/config.png"/><div>Configurar</div></a>
+	</li>
+
+</ul>
+</div>
+<br clear="left"/>
+    <div id="Socios">   
+    <form style="margin:15px; padding:10px; margin:5px; ">
+    <h2>Cobrar la cuota de un socio</h2>
+    <label for="borrower"> Numero de socio</label> <br/>
+  <INPUT type="text" name="borrower" id="borrower" >    
+<br/>
+	
+            <input type="submit" name="action" value="Cobrar a un socio"/>
+            <input type="submit" name="action" value="Reinscribir a un socio"/>
+            
+    </form>
+
+    </div>
+	
+	
+	<em>
+	<a href="/cgi-bin/koha/fees/fees.pl?action=configurar+modulo">Configurar</a> | versión <!-- TMPL_VAR NAME="version" --> 
+	</em>
+    <!-- /TMPL_IF -->
+    
+    <!-- TMPL_IF NAME="collectors_page" -->
+    	<form>
+    <h2>Cobrar</h2>
+    <label for="collector"> Seleccione el cobrador</label> <br/>
+    <SELECT name="collector" id="collector">
+<!-- TMPL_LOOP NAME="collectors" -->
+	<option value="<!-- TMPL_VAR NAME="cobrador" -->"><!-- TMPL_VAR NAME="cobrador" --></option>
+<!-- /TMPL_LOOP -->
+	</SELECT><br/>
+            <input type="submit" name="action" value="Cargar cuotas a cobrador"/>
+    </form>
+    
+	<form style=" padding:10px; margin:5px;">
+    <h2>Generar recibos</h2>
+    <label for="collector"> Seleccione el cobrador</label> <br/>
+    <SELECT name="collector">
+<!-- TMPL_LOOP NAME="collectors" -->
+	<option value="<!-- TMPL_VAR NAME="cobrador" -->"><!-- TMPL_VAR NAME="cobrador" --></option>
+<!-- /TMPL_LOOP -->
+	</SELECT><br/>
+	<label for="saltodepagina"> Salto de pagina cada n recibos</label> <br/>
+    <SELECT name="saltodepagina">
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+  <option value="5" selected="selected">5</option>
+  <option value="6">6</option>
+  <option value="7">7</option>
+  <option value="8">8</option>
+</SELECT><br/>
+
+            <input type="submit" name="action" value="Recibos por cobrador"/> 
+
+    </form>
+<!-- /TMPL_IF -->
+<!-- TMPL_IF NAME="generar_cuotas_page" -->
+<div id="cuotas">        
+	<form style="margin:15px; padding:10px; margin:5px; ">
+    <h2>Generar cuotas para un periodo</h2>
+	<label for="period">Cuota: </label>
+	<SELECT name="period">
+	  <option value="1">1</option>
+	  <option value="2">2</option>
+	  <option value="3">3</option>
+	  <option value="4">4</option>
+	  <option value="5">5</option>
+	  <option value="6">6</option>
+	  <option value="7">7</option>
+	  <option value="8">8</option>
+	  <option value="9">9</option>
+	  <option value="10">10</option>
+	  <option value="11">11</option>
+	  <option value="12">12</option>
+	</SELECT> 
+
+	<label for="year">Año: </label>
+	<SELECT name="year">
+	  <option value="2010">2010</option>
+	  <option value="2011" selected="selected">2011</option>
+	  <option value="2012">2012</option>
+	</SELECT><br/>
+
+            <input type="submit" name="action" value="Generar cuotas"/>
+<hr/>
+    <h2>Eliminar cuotas para un periodo</h2>
+    <SELECT name="fees">
+ <!-- TMPL_LOOP NAME="actives_fees" -->
+      <option value="<!-- TMPL_VAR NAME="fees" -->_<!-- TMPL_VAR NAME="year" -->"><!-- TMPL_VAR NAME="fees" -->-<!-- TMPL_VAR NAME="year" --></option>
+<!-- /TMPL_LOOP -->
+	</SELECT>
+	<p><strong>ATENCIÓN: Las cuotas pagas NO sera eliminadas.</strong></p>
+	 <input type="submit" name="action" value="Eliminar cuotas"/>
+
+    </form>
+    
+</div>
+<!-- /TMPL_IF -->
+
+<!-- TMPL_IF NAME="otros" -->
+<h3>Generar recibo sin generar deuda</h3>
+ <label for="period">Cantidad de cuotas: </label>
+	<SELECT name="period">
+	  <option value="1">1</option>
+	  <option value="2">2</option>
+	  <option value="3">3</option>
+	  <option value="4">4</option>
+	  <option value="5">5</option>
+	  <option value="6">6</option>
+	  <option value="7">7</option>
+	  <option value="8">8</option>
+	  <option value="9">9</option>
+	  <option value="10">10</option>
+	  <option value="11">11</option>
+	  <option value="12">12</option>
+	</SELECT> 
+
+	<br/>
+	<label for="borrower">Socio</label> 
+  <INPUT type="text" name="borrower" id="borrower" >    
+<!-- /TMPL_IF -->
+
+<!-- TMPL_IF NAME="recalcular" -->
+    <h2>Recalcular deuda desde</h2>
+<label for="period">Cuota: </label>
+	<SELECT name="period">
+	  <option value="1">1</option>
+	  <option value="2">2</option>
+	  <option value="3">3</option>
+	  <option value="4">4</option>
+	  <option value="5">5</option>
+	  <option value="6">6</option>
+	  <option value="7">7</option>
+	  <option value="8">8</option>
+	  <option value="9">9</option>
+	  <option value="10">10</option>
+	  <option value="11">11</option>
+	  <option value="12">12</option>
+	</SELECT> 
+
+	<label for="year">Año: </label>
+	<SELECT name="year">
+	  <option value="2010">2010</option>
+	  <option value="2011" selected="selected">2011</option>
+	  <option value="2012">2012</option>
+	</SELECT><br/>
+
+            <input type="submit" name="action" value="Recalcular cuotas"/>
+<!-- /TMPL_IF -->
+<!-- TMPL_IF NAME="run" -->
+    <table>
+<tr><th>Original</th><th>Duplicado</th></tr>
+<!-- TMPL_LOOP NAME="results" -->
+<tr>
+    <td>
+    <DIV>
+      <h2><!-- TMPL_VAR NAME="head" --></h2>
+      <DIV align="center"><!-- TMPL_VAR NAME="description" --> <em> nº"<!-- TMPL_VAR NAME="number" --></em></div>
+     <p> Socio:<!-- TMPL_VAR NAME="surname" --> <!-- TMPL_VAR NAME="firstname" --> <!-- TMPL_VAR NAME="cardnumber" --><br/></p>
+      <h3>son $ <!-- TMPL_VAR NAME="amount" --></h3><br/>
+      <font size=\"-2\">Original | cobrador:<!-- TMPL_VAR NAME="cobrador" --> | cuota <!-- TMPL_VAR NAME="mes" -->-<!-- TMPL_VAR NAME="anio" --> <!-- TMPL_VAR NAME="montocuota" --> </font><hr/>
+      <div align=\"center\"> <!-- TMPL_VAR NAME="footer" --></div>
+      </DIV>
+    </td>
+    <td>
+    <DIV>
+      <h2><!-- TMPL_VAR NAME="head" --></h2>
+      <DIV align="center"><!-- TMPL_VAR NAME="description" --> <em> nº"<!-- TMPL_VAR NAME="number" --></em></div>
+     <p> Socio:<!-- TMPL_VAR NAME="surname" --> <!-- TMPL_VAR NAME="firstname" --> <!-- TMPL_VAR NAME="cardnumber" --><br/>
+     <!-- TMPL_VAR NAME="address" --> <!-- TMPL_VAR NAME="city" --></p>
+      <h3>son $ <!-- TMPL_VAR NAME="amount" --></h3><br/>
+      <font size=\"-2\">Duplicado | cobrador:<!-- TMPL_VAR NAME="cobrador" --> | 
+		cuota <!-- TMPL_VAR NAME="mes" -->-<!-- TMPL_VAR NAME="anio" -->  <!-- TMPL_VAR NAME="montocuota" --></font><hr/>
+      <div align=\"center\"> <!-- TMPL_VAR NAME="footer" --></div>
+      </DIV>
+    </td>
+</tr><!-- TMPL_VAR NAME="tagEntreRecibos" -->
+<!-- /TMPL_LOOP -->
+</table>
+    <!-- /TMPL_IF -->
+<!-- TMPL_IF NAME="cobrar" -->
+<h3><!-- TMPL_VAR NAME="title" --></h3>
+	<form method="POST">
+	<!-- TMPL_IF NAME="collector_selector" -->
+	<label for="collector">Cobrador</label>
+	<INPUT type="radio" name="collector" id="collector" value="<!-- TMPL_VAR NAME="collector" -->" checked> <!-- TMPL_VAR NAME="collector" -->
+	<INPUT type="radio" name="collector" id="collector"  value=""> Biblioteca
+	<!-- /TMPL_IF -->	
+    <table>
+    <tr><th>Descripcion</th><th>Monto cobrado</th><th>Cobrar</th></tr>
+    <!-- TMPL_LOOP NAME="borrowers" -->
+    <tr><th colspan="2">(<!-- TMPL_VAR NAME="cardnumber" -->)  <!-- TMPL_VAR NAME="surname" --> <!-- TMPL_VAR NAME="firstname" --></th>
+    <th>
+			<a href="javascript:"  onclick="set_borrower_amount('<!-- TMPL_VAR NAME="borrowernumber" -->','0');">
+				No
+			</a>
+			
+		</th>
+    </tr>
+    <!-- TMPL_LOOP NAME="accountlines" -->
+    <tr>
+		<td><!-- TMPL_VAR NAME="description" --></td>
+		<td><INPUT type="text" class="borrowernumber_<!-- TMPL_VAR NAME="borrowernumber" -->" 
+		id="monto_<!-- TMPL_VAR NAME="borrowernumber" -->_<!-- TMPL_VAR NAME="accountno" -->" 
+		name="monto_<!-- TMPL_VAR NAME="borrowernumber" -->_<!-- TMPL_VAR NAME="accountno" -->" 
+		value="<!-- TMPL_VAR NAME="amount" -->" size="6" maxlength="6" ></td>
+		<td>
+			<a href="javascript:" onclick="set_amount('monto_<!-- TMPL_VAR NAME="borrowernumber" -->_<!-- TMPL_VAR NAME="accountno" -->','0','<!-- TMPL_VAR NAME="borrowernumber" -->');">
+				No
+			</a>
+			| <a href="javascript:" onclick="set_amount('monto_<!-- TMPL_VAR NAME="borrowernumber" -->_<!-- TMPL_VAR NAME="accountno" -->','<!-- TMPL_VAR NAME="amount" -->','<!-- TMPL_VAR NAME="borrowernumber" -->');">
+				Si
+			</a>
+			| <a href="javascript:" onclick="eliminar_cuota(<!-- TMPL_VAR NAME="borrowernumber" -->, <!-- TMPL_VAR NAME="accountno" -->)">
+				Eliminar
+			</a>
+		</td>
+	</tr>
+
+
+
+	<!-- /TMPL_LOOP -->
+	<tr><td colspan="2"><!-- TMPL_VAR NAME="collector" --> Total:</td><td><span id="total_amountoutstanding_<!-- TMPL_VAR NAME="borrowernumber" -->"><!-- TMPL_VAR NAME="total_amountoutstanding" --></span></td></tr>
+	<!-- TMPL_IF NAME="collector_selector" -->
+	<tr><td  colspan="3"><h3>
+	<a href="/cgi-bin/koha/fees/fees.pl?borrower=<!-- TMPL_VAR NAME="borrowernumber" -->&action=new_fee">Agregar cuota <!-- TMPL_VAR NAME="next_fee_text" --> +
+	</a></h3>
+	
+	</td></tr>
+	<!-- TMPL_ELSE -->	
+	<INPUT type="hidden" name="collector" name="collector" value="<!-- TMPL_VAR NAME="collector" -->">
+	<!-- /TMPL_IF -->	
+	<!-- /TMPL_LOOP -->
+	<tfoot>
+
+	<tr><td colspan="5"><input type="submit" name="action" value="guardar cobro"/></td></tr>
+	</tfoot>
+	</table>
+	
+  
+
+	<form>
+<!-- /TMPL_IF -->
+<!-- TMPL_IF NAME="guardar" -->
+<ul>
+<!-- TMPL_LOOP NAME="results" -->
+<li><!-- TMPL_VAR NAME="text" --></li>
+<!-- /TMPL_LOOP -->
+</ul>
+<!-- /TMPL_IF -->
+<!-- TMPL_IF NAME="show_borrow_bar" -->
+ <div id="Socios">   
+    <form style="margin:15px; padding:10px; margin:5px; ">
+    <h2>Cobrar la cuota de un socio</h2>
+    <label for="borrower"> Numero de socio</label> <br/>
+  <INPUT type="text" name="borrower" id="borrower" >    
+<br/>
+	
+            <input type="submit" name="action" value="Cobrar a un socio"/>
+            
+    </form>
+        </div>
+<!-- /TMPL_IF -->
+
+<!-- TMPL_IF NAME="recibos" -->
+    <table>
+<tr><th>Original</th><th>Duplicado</th></tr>
+<!-- TMPL_LOOP NAME="borrowers" -->
+<tr>
+    <td>
+    <br/><br/>
+    <DIV>
+      <font size=\"-2\">Original <em> nº"<!-- TMPL_VAR NAME="number" --></em> | cobrador:<!-- TMPL_VAR NAME="collector" --> 
+      </font>
+      <h2><!-- TMPL_VAR NAME="head" --></h2>
+     <p> Socio: <!-- TMPL_VAR NAME="surname" --> <!-- TMPL_VAR NAME="firstname" --> <em>(<!-- TMPL_VAR NAME="cardnumber" -->)</em><br/>
+     <!-- TMPL_VAR NAME="address" --> <!-- TMPL_VAR NAME="city" -->
+     </p>
+<ul>
+<!-- TMPL_LOOP NAME="accountlines" -->
+    <li><!-- TMPL_VAR NAME="description" --> : $ <!-- TMPL_VAR NAME="amount" --></li>
+<!-- /TMPL_LOOP -->
+</ul>
+      <h3>Total: $ <!-- TMPL_VAR NAME="total_amountoutstanding" --> | Cobrado: $  ______</h3>
+      <hr/>
+      <div align=\"center\"> <!-- TMPL_VAR NAME="footer" --></div>
+      </DIV>
+    <br/><br/>
+    </td>
+        <td>
+    <br/><br/>
+    <DIV>
+      <font size=\"-2\">Duplicado <em> nº"<!-- TMPL_VAR NAME="number" --></em> | cobrador:<!-- TMPL_VAR NAME="collector" --> 
+      </font>
+      <h2><!-- TMPL_VAR NAME="head" --></h2>
+     <p> Socio: <!-- TMPL_VAR NAME="surname" --> <!-- TMPL_VAR NAME="firstname" --> <em>(<!-- TMPL_VAR NAME="cardnumber" -->)</em><br/></p>
+        <!-- TMPL_VAR NAME="address" --> <!-- TMPL_VAR NAME="city" -->
+  
+<ul>
+<!-- TMPL_LOOP NAME="accountlines" -->
+    <li><!-- TMPL_VAR NAME="description" --> : $ <!-- TMPL_VAR NAME="amount" --></li>
+<!-- /TMPL_LOOP -->
+</ul>
+      <h3>Total: $ <!-- TMPL_VAR NAME="total_amountoutstanding" --> | Cobrado: $  ______</h3>
+      <hr/>
+      <div align=\"center\"> <!-- TMPL_VAR NAME="footer" --></div>
+      </DIV>
+    <br/><br/>
+    </td>
+</tr>
+<!-- TMPL_VAR NAME="tagEntreRecibos" -->
+
+<!-- /TMPL_LOOP -->
+</table>
+
+<!-- /TMPL_IF -->
+
+
+<ul id="log">
+<!-- TMPL_LOOP NAME="log" -->
+<li><!-- TMPL_VAR NAME="text" --></li>
+<!-- /TMPL_LOOP -->
+</ul>
+<!-- TMPL_IF NAME="reinscripcion" -->
+<h3>Atencion: todas estas deudas seran eliminiadas</h3>
+<form method="POST">
+ <table>
+	 <tr>
+		<th>N</th>
+		<th>Descripción</th>
+		<th>Monto</th>
+	 </tr>
+<!-- TMPL_LOOP NAME="accountlines" -->
+	 <tr>
+		 <td><!-- TMPL_VAR NAME="accountno" --></td>
+		 <td><!-- TMPL_VAR NAME="description" --></td>
+		 <td><!-- TMPL_VAR NAME="amount" --></td>
+	 </tr>
+<!-- /TMPL_LOOP -->
+ </table>
+ <label for="accept">Si, dar de baja la deuda y crear las nuevas cuotas</label>
+ 
+ <INPUT type="checkbox" name="accept"  name="accept" value="1">
+ <INPUT type="hidden" name="borrower" value="<!-- TMPL_VAR NAME="borrower" -->"><br/>
+             <input type="submit" name="action" value="Reinscribir a un socio"/>
+
+</form>
+<!-- /TMPL_IF -->
+
+    </div>
+</div>
+<div class="yui-b">
+<!-- TMPL_INCLUDE NAME="circ-menu.inc" -->
+
+<h5>Crear y generar informes</h5>
+<ul>
+	<li><a href="/cgi-bin/koha/fees/fees.pl">Modulo de Cuotas</a></li>
+</ul>
+</div>
+</div>
+</div>
+<!-- TMPL_INCLUDE NAME="intranet-bottom.inc" -->
