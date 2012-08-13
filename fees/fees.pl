@@ -17,7 +17,7 @@
 # with Koha; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-## 2011 Filoquin BPBR
+## 2011-2012 filoquin BPBR
 
 use strict;
 #use warnings; FIXME - Bug 2505
@@ -49,8 +49,8 @@ my $input = new CGI;
 my $cobrador = $input->param('cobrador');
 my $action = $input->param('action');
 
-my $version="0.1.3";
-my $db_version="0.1.9";
+my $version="0.1.4";
+my $db_version="0.1.10";
 my $flagsrequired;
 my @log =();
 
@@ -63,6 +63,7 @@ my $ModuloRecibosHeader = C4::Context->preference('ModuloRecibosHeader');
 my $ModuloRecibosFooter = C4::Context->preference('ModuloRecibosFooter');
 my $ModuloRecibosNumero = C4::Context->preference('ModuloRecibosNumero');
 my $ModuloRecibosValorReinscripcion = C4::Context->preference('ModuloRecibosValorReinscripcion');
+my $ModuloRecibosDefaultValue = C4::Context->preference('ModuloRecibosDefaultValue');
 
 my $ModuloRecibosVersion = C4::Context->preference('ModuloRecibosVersion');
  if ($ModuloRecibosVersion ne $db_version){
@@ -116,6 +117,7 @@ if ( (!$ModuloRecibosActivado and $action ne 'Guardar Preferencias') or $action 
 	$template->param( 'config' => 1 ,
 	'footer' => $ModuloRecibosFooter,
 	'ModuloRecibosValorReinscripcion' => $ModuloRecibosValorReinscripcion,
+	'ModuloRecibosDefaultValue' => $ModuloRecibosDefaultValue,
 	'header' => $ModuloRecibosHeader,
 	'numero' => $ModuloRecibosNumero,
 	'version' => $version
@@ -139,6 +141,8 @@ elsif ($action eq 'Guardar Preferencias'){
 	my $footer = $input->param('footer');
 	my $numero = $input->param('numero');
 	my $ModuloRecibosValorReinscripcion = $input->param('ModuloRecibosValorReinscripcion');
+	my $ModuloRecibosDefaultValue = $input->param('ModuloRecibosDefaultValue');
+	
 
 	#guardo las preferencias en el sistema
 	C4::Context->set_preference( 'ModuloRecibosActivado', 1 );
@@ -147,6 +151,7 @@ elsif ($action eq 'Guardar Preferencias'){
 	C4::Context->set_preference( 'ModuloRecibosNumero', $numero );
 	C4::Context->set_preference( 'ModuloRecibosVersion', $db_version );
 	C4::Context->set_preference( 'ModuloRecibosValorReinscripcion', $ModuloRecibosValorReinscripcion );
+	C4::Context->set_preference( 'ModuloRecibosDefaultValue', $ModuloRecibosDefaultValue );
 	
 
 
@@ -1323,9 +1328,9 @@ sub new_fee{
 			$data->{'new_period'} = @date[0];
 			$data->{'new_year'} = @date[1];
 	}
-
+	##to do el monto esta cableado es un error. obtener cuotas
 	create_fees("Couta societaria ". $data->{'new_period'} ."-". $data->{'new_year'}  ,$borrowernumber, 
-			'10',$data->{'new_period'},$data->{'new_year'},'','');
+			$ModuloRecibosDefaultValue,$data->{'new_period'},$data->{'new_year'},'','');
 			
 	print $input-> redirect ('/cgi-bin/koha/fees/fees.pl?borrower='. $borrower->{'cardnumber'}  .
 		'&action=Cobrar a un socio');
